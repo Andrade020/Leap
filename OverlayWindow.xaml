@@ -1,0 +1,213 @@
+<Window x:Class="Leap.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Leap"
+        WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
+        Topmost="True" AllowsTransparency="True" Background="Transparent"
+        Focusable="True" ShowActivated="True"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        PreviewTextInput="Window_PreviewTextInput">
+
+    <Window.Resources>
+        <!-- cartão de atalho, usado nas seções e nos submenus -->
+        <DataTemplate x:Key="CardTemplate">
+            <Border Width="330" Margin="8,6" Padding="13"
+                    CornerRadius="10" BorderThickness="1"
+                    Cursor="Hand"
+                    MouseLeftButtonUp="Card_Click">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="#161B22"/>
+                        <Setter Property="BorderBrush" Value="#30363D"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1C2330"/>
+                                <Setter Property="BorderBrush" Value="#58A6FF"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel Orientation="Horizontal">
+                    <Border Background="{Binding BadgeColor}" CornerRadius="6"
+                            Width="34" Height="34" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding KeyDisplay}" Foreground="White"
+                                   FontWeight="Bold" FontSize="15"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Label}" Foreground="#E6EDF3"
+                                   FontSize="14.5" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Sub}" Foreground="#8B949E"
+                                   FontSize="11" MaxWidth="248"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Border Background="#E60D1117">
+        <DockPanel Margin="48,24,48,18">
+            <TextBlock x:Name="Breadcrumb" DockPanel.Dock="Top"
+                       HorizontalAlignment="Center"
+                       FontSize="21" FontWeight="Light" Foreground="#8B949E"
+                       Text="Leap"/>
+
+            <TextBlock x:Name="Footer" DockPanel.Dock="Bottom"
+                       HorizontalAlignment="Center" TextAlignment="Center"
+                       TextWrapping="Wrap" Margin="0,12,0,0"
+                       FontSize="12" Foreground="#6E7681"/>
+
+            <!-- zona educativa: vim motions, embaixo -->
+            <StackPanel x:Name="TipsPanel" DockPanel.Dock="Bottom"
+                        HorizontalAlignment="Center" Margin="0,8,0,0">
+                <TextBlock Text="A P R E N D A   V I M   —   uma leva nova de motions a cada abertura (clique para a referência completa)"
+                           FontSize="10.5" Foreground="#6E7681"
+                           HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                <ItemsControl x:Name="TipsHost" Focusable="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel HorizontalAlignment="Center" MaxWidth="1400"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="5,3" Padding="10,7" CornerRadius="8"
+                                    BorderThickness="1" Cursor="Hand"
+                                    MouseLeftButtonUp="Tip_Click">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#12161D"/>
+                                        <Setter Property="BorderBrush" Value="#21262D"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="BorderBrush" Value="#E3B341"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Keys}" FontFamily="Consolas"
+                                               FontWeight="Bold" FontSize="13" Foreground="#E3B341"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Desc}" FontSize="11.5" Foreground="#8B949E"
+                                               Margin="10,0,0,0" VerticalAlignment="Center"
+                                               MaxWidth="270" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <Grid>
+                <!-- raiz: seções espalhadas de cima para baixo -->
+                <ScrollViewer x:Name="SectionsScroll" VerticalAlignment="Top" Margin="0,22,0,0"
+                              VerticalScrollBarVisibility="Auto" Focusable="False">
+                    <ItemsControl x:Name="SectionsHost" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,0,26">
+                                    <TextBlock Text="{Binding Title}"
+                                               FontSize="11.5" Foreground="#6E7681"
+                                               HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                    <ItemsControl ItemsSource="{Binding Cards}" Focusable="False"
+                                                  ItemTemplate="{StaticResource CardTemplate}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel HorizontalAlignment="Center" MaxWidth="1120"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- submenus (which-key), centralizados -->
+                <ScrollViewer x:Name="ChordScroll" Visibility="Collapsed"
+                              VerticalAlignment="Center" MaxHeight="620"
+                              VerticalScrollBarVisibility="Auto" Focusable="False">
+                    <ItemsControl x:Name="ItemsHost" Focusable="False"
+                                  ItemTemplate="{StaticResource CardTemplate}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel HorizontalAlignment="Center" MaxWidth="1120"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- menu de ajuda (?) -->
+                <ScrollViewer x:Name="HelpScroll" Visibility="Collapsed"
+                              VerticalAlignment="Center" MaxHeight="660"
+                              VerticalScrollBarVisibility="Auto" Focusable="False">
+                    <ItemsControl x:Name="HelpHost" Focusable="False"
+                                  HorizontalAlignment="Center" MaxWidth="880">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,3">
+                                    <TextBlock DockPanel.Dock="Left" Text="{Binding Keys}"
+                                               FontFamily="Consolas" FontWeight="Bold" FontSize="13"
+                                               Foreground="#E3B341" Width="230" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Desc}" FontSize="12.5"
+                                               Foreground="#C9D1D9" TextWrapping="Wrap"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- modo busca (arquivos e janelas) -->
+                <StackPanel x:Name="SearchPanel" Width="760" VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                    <Border Background="#161B22" BorderBrush="#58A6FF" BorderThickness="1"
+                            CornerRadius="10" Padding="16,10">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Left" Text="/" FontSize="20" FontWeight="Bold"
+                                       Foreground="#58A6FF" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <TextBox x:Name="SearchBox" Background="Transparent" BorderThickness="0"
+                                     Foreground="#E6EDF3" CaretBrush="#58A6FF" FontSize="18"
+                                     VerticalAlignment="Center"
+                                     TextChanged="SearchBox_TextChanged"/>
+                        </DockPanel>
+                    </Border>
+                    <ScrollViewer MaxHeight="540" Margin="0,10,0,0"
+                                  VerticalScrollBarVisibility="Auto" Focusable="False">
+                        <ItemsControl x:Name="ResultsHost" Focusable="False">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="8" Padding="12,8" Margin="0,2" Cursor="Hand"
+                                            MouseLeftButtonUp="Result_Click">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Selected}" Value="True">
+                                                        <Setter Property="Background" Value="#331F6FEB"/>
+                                                    </DataTrigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#1C2330"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" Foreground="#E6EDF3"
+                                                       FontSize="14" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Path}" Foreground="#8B949E"
+                                                       FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <TextBlock x:Name="NoResults" Text="nenhum resultado" Foreground="#6E7681"
+                               FontSize="13" Margin="14,12,0,0" Visibility="Collapsed"/>
+                </StackPanel>
+            </Grid>
+        </DockPanel>
+    </Border>
+</Window>
