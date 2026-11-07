@@ -5,6 +5,10 @@ seus diretórios favoritos como cartões com teclas — no espírito do **which-
 (painel de acordes de tecla) e do **harpoon** (slots fixos para os lugares que você
 mais visita).
 
+## Download
+
+Baixe o `leap-v*-win-x64.zip` mais recente na página de [Releases](https://github.com/Andrade020/Leap/releases), extraia e rode `Leap.exe` (requer o [.NET Desktop Runtime 10](https://dotnet.microsoft.com/download)). Para compilar a partir do código, veja abaixo.
+
 ## Uso
 
 1. Rode `Iniciar-Leap.cmd` (o app fica no ícone da bandeja do sistema).
